@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Ebooking</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+    <style>
+    </style>
+</head>
+
+<body>
+    <div class="container" id="app">
+        <h1>Ebooking</h1>
+        <h2>Reservar Cita</h2>
+
+        <p>
+            <button class="btn" @click="processAction(currentAction.id)">{{ currentAction.id }}</button>
+        </p>
+        <ul>
+            <li v-for="item in result">
+                {{ item.id }}
+            </li>
+        </ul>
+    </div>
+
+    <script src="https://unpkg.com/vue"></script>
+    <script>
+        var app = new Vue({
+            el: '#app',
+            data: {
+                currentAction: {},
+                flow: [
+                    {
+                        id: 'start',
+                        nextAction: 'reservarCita',
+                        condition: true
+                    },
+                    {
+                        id: 'reservarCita',
+                        nextAction: 'elegirParametros',
+                        condition: true
+                    },
+                    {
+                        id: 'elegirParametros',
+                        nextAction: 'end',
+                        condition: true
+                    },
+                    {
+                        id: 'end',
+                        nextAction: '',
+                        condition: true
+                    },
+                ],
+                result: []
+            },
+            mounted: function () {
+                this.currentAction = this.getAction('start');
+            },
+            methods: {
+                getAction: function (actionId) {
+                    const action = this.flow.find(item => item.id === actionId);
+                    if (!action) {
+                        return '';
+                    }
+                    return action;
+                },
+                processAction: function (actionId) {
+                    // do
+                    const action = this.getAction(actionId);
+                    if (this.$options.methods.hasOwnProperty(actionId)) {
+                        this.$options.methods[actionId].bind(this)();
+                    } else {
+                        console.log('undefined method:', actionId);
+                    }
+
+                    // next
+                    if (!actionId) {
+                        return;
+                    }
+                    const nextAction = action.nextAction;
+                    console.log(`nextAction of ${actionId}: ${nextAction}`);
+                    if (!nextAction) {
+                        return;
+                    }
+                    this.currentAction = nextAction;
+                    // this.processAction(nextAction);
+                    // if (this.limit--) {
+                    // }
+                },
+                start: function () {
+                    this.result.push(this.currentAction);
+                }
+            }
+        });
+    </script>
+
+</body>
+
+</html>
