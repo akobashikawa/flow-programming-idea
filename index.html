@@ -18,7 +18,7 @@
 
         <ul>
             <li v-for="item in result">
-                {{ item.id }}
+                {{ item }}
             </li>
         </ul>
         <p v-if="currentAction">
@@ -31,7 +31,8 @@
         var app = new Vue({
             el: '#app',
             data: {
-                currentAction: {},
+                previousAction: null,
+                currentAction: null,
                 flow: [
                     {
                         id: 'start',
@@ -71,39 +72,29 @@
                     }
                     return action;
                 },
-                getNextAction: function (action) {
-                    if (!action) {
-                        return null;
-                    }
-                    const nextAction = this.getAction(action.nextActionId);
-                    if (!nextAction) {
-                        return null;
-                    }
-                    return nextAction;
+                setCurrentAction: function (action) {
+                    this.previousAction = this.currentAction;
+                    this.currentAction = action;
                 },
                 processAction: function (actionId) {
-                    console.log('actionId:', actionId);
-                    if (!actionId) {
-                        return;
-                    };
-
+                    console.log('processAction', actionId);
                     const action = this.getAction(actionId);
-                    console.log('action:', action);
-                    if (!action) {
-                        return;
-                    };
 
                     if (this.$options.methods.hasOwnProperty(action.do)) {
-                        console.log('running method:', action.do);
+                        console.log('doing method:', action.do);
+                        this.previousAction = this.currentAction;
+                        this.currentAction = action;
                         this.$options.methods[action.do].bind(this)();
                     } else {
-                        console.log('undefined method:', action.do);
+                        console.log('method not defined:', action.do);
                     }
 
                 },
                 test: function () {
-                    this.result.push(this.currentAction);
-                    this.currentAction = this.getNextAction(this.currentAction);
+                    this.result.push(this.currentAction.id);
+
+                    const nextAction = this.getAction(this.currentAction.nextActionId);
+                    this.setCurrentAction(nextAction);
                 }
             }
         });
