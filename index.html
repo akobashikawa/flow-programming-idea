@@ -21,7 +21,7 @@
                 {{ item.id }}
             </li>
         </ul>
-        <p>
+        <p v-if="currentAction">
             <button class="btn" @click="processAction(currentAction.id)">{{ currentAction.id }}</button>
         </p>
     </div>
@@ -36,21 +36,25 @@
                     {
                         id: 'start',
                         nextActionId: 'reservarCita',
+                        do: 'test',
                         condition: true
                     },
                     {
                         id: 'reservarCita',
                         nextActionId: 'elegirParametros',
+                        do: 'test',
                         condition: true
                     },
                     {
                         id: 'elegirParametros',
                         nextActionId: 'end',
+                        do: 'test',
                         condition: true
                     },
                     {
                         id: 'end',
                         nextActionId: '',
+                        do: 'test',
                         condition: true
                     },
                 ],
@@ -67,29 +71,39 @@
                     }
                     return action;
                 },
-                processAction: function (actionId) {
-                    // do
-                    const action = this.getAction(actionId);
-                    if (this.$options.methods.hasOwnProperty(actionId)) {
-                        console.log('running method:', actionId);
-                        this.$options.methods[actionId].bind(this)();
-                    } else {
-                        console.log('undefined method:', actionId);
+                getNextAction: function (action) {
+                    if (!action) {
+                        return null;
                     }
-
-                    // next
+                    const nextAction = this.getAction(action.nextActionId);
+                    if (!nextAction) {
+                        return null;
+                    }
+                    return nextAction;
+                },
+                processAction: function (actionId) {
+                    console.log('actionId:', actionId);
                     if (!actionId) {
                         return;
                     };
-                    const nextAction = this.getAction(action.nextActionId);
-                    console.log(`nextAction of ${actionId}: ${action.nextActionId}`);
-                    if (!nextAction) {
+
+                    const action = this.getAction(actionId);
+                    console.log('action:', action);
+                    if (!action) {
                         return;
+                    };
+
+                    if (this.$options.methods.hasOwnProperty(action.do)) {
+                        console.log('running method:', action.do);
+                        this.$options.methods[action.do].bind(this)();
+                    } else {
+                        console.log('undefined method:', action.do);
                     }
-                    this.currentAction = nextAction;
+
                 },
-                start: function () {
+                test: function () {
                     this.result.push(this.currentAction);
+                    this.currentAction = this.getNextAction(this.currentAction);
                 }
             }
         });
