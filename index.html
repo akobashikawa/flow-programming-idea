@@ -13,17 +13,17 @@
 
 <body>
     <div class="container" id="app">
-        <h1>Ebooking</h1>
+        <h1>Ebooking Flow</h1>
         <h2>Reservar Cita</h2>
 
-        <p>
-            <button class="btn" @click="processAction(currentAction.id)">{{ currentAction.id }}</button>
-        </p>
         <ul>
             <li v-for="item in result">
                 {{ item.id }}
             </li>
         </ul>
+        <p>
+            <button class="btn" @click="processAction(currentAction.id)">{{ currentAction.id }}</button>
+        </p>
     </div>
 
     <script src="https://unpkg.com/vue"></script>
@@ -35,22 +35,22 @@
                 flow: [
                     {
                         id: 'start',
-                        nextAction: 'reservarCita',
+                        nextActionId: 'reservarCita',
                         condition: true
                     },
                     {
                         id: 'reservarCita',
-                        nextAction: 'elegirParametros',
+                        nextActionId: 'elegirParametros',
                         condition: true
                     },
                     {
                         id: 'elegirParametros',
-                        nextAction: 'end',
+                        nextActionId: 'end',
                         condition: true
                     },
                     {
                         id: 'end',
-                        nextAction: '',
+                        nextActionId: '',
                         condition: true
                     },
                 ],
@@ -63,7 +63,7 @@
                 getAction: function (actionId) {
                     const action = this.flow.find(item => item.id === actionId);
                     if (!action) {
-                        return '';
+                        return null;
                     }
                     return action;
                 },
@@ -71,6 +71,7 @@
                     // do
                     const action = this.getAction(actionId);
                     if (this.$options.methods.hasOwnProperty(actionId)) {
+                        console.log('running method:', actionId);
                         this.$options.methods[actionId].bind(this)();
                     } else {
                         console.log('undefined method:', actionId);
@@ -79,16 +80,13 @@
                     // next
                     if (!actionId) {
                         return;
-                    }
-                    const nextAction = action.nextAction;
-                    console.log(`nextAction of ${actionId}: ${nextAction}`);
+                    };
+                    const nextAction = this.getAction(action.nextActionId);
+                    console.log(`nextAction of ${actionId}: ${action.nextActionId}`);
                     if (!nextAction) {
                         return;
                     }
                     this.currentAction = nextAction;
-                    // this.processAction(nextAction);
-                    // if (this.limit--) {
-                    // }
                 },
                 start: function () {
                     this.result.push(this.currentAction);
